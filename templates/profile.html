@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %} - Профиль{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card mb-4 fade-in">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Мои заявки</h4>
+                <a href="{{ url_for('create_application') }}" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Новая заявка
+                </a>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Курс</th>
+                                    <th>Дата начала</th>
+                                    <th>Способ оплаты</th>
+                                    <th>Статус</th>
+                                    <th>Дата создания</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                <tr>
+                                    <td>{{ app.course.name }}</td>
+                                    <td>{{ app.desired_start_date.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        {% if app.payment_method == 'cash' %}
+                                            Наличными
+                                        {% else %}
+                                            Перевод
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ app.status }}">
+                                            {% if app.status == 'new' %}
+                                                Новая
+                                            {% elif app.status == 'in_progress' %}
+                                                В процессе
+                                            {% else %}
+                                                Завершена
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ app.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if app.status == 'completed' and not app.review %}
+                                            <a href="{{ url_for('add_review', application_id=app.id) }}" 
+                                               class="btn btn-warning btn-sm">
+                                                Оставить отзыв
+                                            </a>
+                                        {% elif app.review %}
+                                            <span class="badge bg-success">Отзыв оставлен</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="lead">У вас пока нет заявок</p>
+                        <a href="{{ url_for('create_application') }}" class="btn btn-primary">
+                            Создать первую заявку
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Информация о пользователе -->
+        <div class="card fade-in">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Мой профиль</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>ФИО:</strong> {{ current_user.full_name }}</p>
+                        <p><strong>Логин:</strong> {{ current_user.login }}</p>
+                        <p><strong>Email:</strong> {{ current_user.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Телефон:</strong> {{ current_user.phone }}</p>
+                        <p><strong>Дата регистрации:</strong> {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

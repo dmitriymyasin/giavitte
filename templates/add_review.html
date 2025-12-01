@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %} - Добавить отзыв{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card fade-in">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0">Отзыв о курсе</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <h5>Информация о заявке:</h5>
+                    <p><strong>Курс:</strong> {{ application.course.name }}</p>
+                    <p><strong>Дата начала:</strong> {{ application.desired_start_date.strftime('%d.%m.%Y') }}</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('add_review', application_id=application.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        {{ form.rating.label(class="form-label") }}
+                        {{ form.rating(class="form-select") }}
+                        {% if form.rating.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.rating.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.comment.label(class="form-label") }}
+                        {{ form.comment(class="form-control", rows=5) }}
+                        <div class="form-text">Опишите ваши впечатления от курса</div>
+                        {% if form.comment.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.comment.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-warning btn-lg") }}
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                        Вернуться к списку заявок
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

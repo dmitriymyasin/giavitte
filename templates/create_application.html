@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %} - Новая заявка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card fade-in">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Создание новой заявки</h4>
+            </div>
+            <div class="card-body">
+                <form id="application-form" method="POST" action="{{ url_for('create_application') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.course_name.label(class="form-label") }}
+                        {{ form.course_name(class="form-select") }}
+                        {% if form.course_name.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.course_name.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.desired_start_date.label(class="form-label") }}
+                        {{ form.desired_start_date(class="form-control", placeholder="ДД.ММ.ГГГГ") }}
+                        <div class="form-text">Формат даты: ДД.ММ.ГГГГ (например, 01.09.2024)</div>
+                        {% if form.desired_start_date.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.desired_start_date.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.payment_method.label(class="form-label") }}
+                        <div class="mt-2">
+                            {% for value, label in form.payment_method.choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" 
+                                       name="{{ form.payment_method.name }}" 
+                                       id="{{ form.payment_method.name }}_{{ loop.index }}" 
+                                       value="{{ value }}"
+                                       {% if loop.first %}checked{% endif %}>
+                                <label class="form-check-label" for="{{ form.payment_method.name }}_{{ loop.index }}">
+                                    {{ label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.payment_method.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.payment_method.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success btn-lg") }}
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                        Вернуться к списку заявок
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

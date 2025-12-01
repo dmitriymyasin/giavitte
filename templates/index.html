@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %} - Главная{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card mb-4 fade-in">
+            <div class="card-body text-center">
+                <h1 class="card-title mb-4">Добро пожаловать на портал "Корочки.есть"!</h1>
+                <p class="lead mb-4">
+                    Записывайтесь на онлайн курсы дополнительного профессионального образования 
+                    и получайте востребованные навыки в IT-сфере.
+                </p>
+                
+                {% if not current_user.is_authenticated %}
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                            Начать обучение
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-4">
+                            Войти в систему
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="{{ url_for('create_application') }}" class="btn btn-success btn-lg px-4 gap-3">
+                            Подать новую заявку
+                        </a>
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-success btn-lg px-4">
+                            Мои заявки
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Слайдер -->
+        <div class="card mb-4 fade-in">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Наши курсы</h4>
+            </div>
+            <div class="card-body">
+                <div id="slider-container" class="slider-container">
+                    <div class="slider">
+                        <div class="slide" style="background-image: url('{{ url_for('static', filename='img/slider/slide1.jpg') }}');"></div>
+                        <div class="slide" style="background-image: url('{{ url_for('static', filename='img/slider/slide2.jpg') }}');"></div>
+                        <div class="slide" style="background-image: url('{{ url_for('static', filename='img/slider/slide3.jpg') }}');"></div>
+                        <div class="slide" style="background-image: url('{{ url_for('static', filename='img/slider/slide4.jpg') }}');"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Доступные курсы -->
+        <div class="row row-cols-1 row-cols-md-3 g-4 fade-in">
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Основы алгоритмизации и программирования</h5>
+                        <p class="card-text">Изучите базовые алгоритмы и принципы программирования. Начните свой путь в IT с основ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Основы веб-дизайна</h5>
+                        <p class="card-text">Научитесь создавать современные и адаптивные веб-интерфейсы. Дизайн для всех устройств.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Основы проектирования баз данных</h5>
+                        <p class="card-text">Освойте проектирование и разработку эффективных баз данных для ваших приложений.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/slider.js') }}"></script>
+{% endblock %}

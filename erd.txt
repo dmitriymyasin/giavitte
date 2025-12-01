@@ -1,0 +1,138 @@
+@startuml
+' Настройки диаграммы
+skinparam roundcorner 15
+skinparam linetype ortho
+skinparam packageStyle rectangle
+hide circle
+' Цветовая схема
+skinparam class {
+    BackgroundColor<<Entity>> #E1F5FE
+    BackgroundColor<<PK>> #FFF8E1
+    BorderColor #0277BD
+    ArrowColor #0288D1
+}
+
+' Определение сущностей
+entity "users" as users <<Entity>> {
+  + id : INT <<PK>>
+  --
+  login : VARCHAR(50) <<UNIQUE>>
+  password : VARCHAR(255)
+  full_name : VARCHAR(100)
+  phone : VARCHAR(20)
+  email : VARCHAR(100) <<UNIQUE>>
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity "courses" as courses <<Entity>> {
+  + id : INT <<PK>>
+  --
+  name : VARCHAR(100) <<UNIQUE>>
+  description : TEXT
+  created_at : TIMESTAMP
+}
+
+entity "applications" as applications <<Entity>> {
+  + id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  course_id : INT <<FK>>
+  desired_start_date : DATE
+  payment_method : ENUM('cash', 'bank_transfer')
+  status : ENUM('new', 'in_progress', 'completed')
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity "reviews" as reviews <<Entity>> {
+  + id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  application_id : INT <<FK>>
+  rating : TINYINT
+  comment : TEXT
+  created_at : TIMESTAMP
+}
+
+entity "application_status_history" as history <<Entity>> {
+  + id : INT <<PK>>
+  --
+  application_id : INT <<FK>>
+  old_status : ENUM('new', 'in_progress', 'completed')
+  new_status : ENUM('new', 'in_progress', 'completed')
+  changed_by : VARCHAR(50)
+  changed_at : TIMESTAMP
+}
+
+entity "user_roles" as roles <<Entity>> {
+  + id : INT <<PK>>
+  --
+  name : VARCHAR(50) <<UNIQUE>>
+  description : TEXT
+}
+
+entity "user_role_assignments" as assignments <<Entity>> {
+  + user_id : INT <<PK,FK>>
+  + role_id : INT <<PK,FK>>
+}
+
+' Определение связей
+users ||--o{ applications : "создает"
+courses ||--o{ applications : "имеет"
+applications ||--o{ reviews : "получает"
+applications ||--o{ history : "отслеживает историю"
+users ||--o{ reviews : "пишет"
+users ||--|| assignments : "имеет роль"
+roles ||--|| assignments : "назначена"
+
+' Добавление индексов в отдельный блок
+note top of users
+  Индексы:
+  - idx_login(login)
+  - idx_email(email)
+end note
+
+note top of applications
+  Индексы:
+  - idx_user_id(user_id)
+  - idx_status(status)
+  - idx_created_at(created_at)
+end note
+
+note top of reviews
+  Уникальный ключ:
+  - unique_user_application(user_id, application_id)
+  Индексы:
+  - idx_rating(rating)
+  - idx_created_at(created_at)
+end note
+
+note top of history
+  Индексы:
+  - idx_application_id(application_id)
+  - idx_changed_at(changed_at)
+end note
+
+' Отношения с указанием мощности
+applications }o--|| users : "принадлежит"
+applications }o--|| courses : "ссылается на"
+reviews }o--|| users : "автор"
+reviews }o--|| applications : "относится к"
+history }o--|| applications : "история для"
+assignments }o--|| users : "пользователь"
+assignments }o--|| roles : "роль"
+
+' Легенда
+legend right
+  <b>Условные обозначения:</b>
+  <color:#0277BD>|</color> -- один
+  <color:#0277BD>||</color> -- ровно один
+  <color:#0277BD>}</color> -- много
+  <color:#0277BD>o</color> -- ноль или много
+  <color:#0277BD>PK</color> -- Первичный ключ
+  <color:#0277BD>FK</color> -- Внешний ключ
+  <color:#0277BD>UNIQUE</color> -- Уникальное значение
+end legend
+
+@enduml
