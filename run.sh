@@ -5,6 +5,13 @@ echo "   Запуск проекта 'Корочки.есть'"
 echo "========================================"
 echo ""
 
+# Скачивание bootstrap
+curl -o static/css/bootstrap.min.css https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
+echo "bootstrap css скачен"
+
+curl -o static/js/bootstrap.bundle.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js
+echo "bootstrap js скачен"
+
 # Проверка Python
 if ! command -v python3 &> /dev/null; then
     echo "ОШИБКА: Python3 не найден. Установите Python 3.8 или выше."
@@ -54,9 +61,13 @@ else
     fi
 fi
 
+# Запуск наполнения базы данных
+python3 recreate_database.py
+echo "Все данные для базы данных созданы."
+
 # Инициализация базы данных
-echo "Инициализация базы данных..."
-python3 init_database.py
+# echo "Инициализация базы данных..."
+# python3 init_database.py
 
 # Запуск приложения
 echo ""
