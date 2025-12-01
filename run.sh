@@ -38,28 +38,28 @@ pip install -r requirements.txt
 echo "✓ Зависимости установлены"
 
 # Проверка MySQL
-echo "Проверка подключения к MySQL..."
-if mysql -h localhost -u root -pHfgFGty217GF -e "SELECT 1;" 2>/dev/null; then
-    echo "✓ Подключение к MySQL успешно"
+# echo "Проверка подключения к MySQL..."
+# if mysql -h localhost -u root -p HfgFGty217GF -e "SELECT 1;" 2>/dev/null; then
+#     echo "✓ Подключение к MySQL успешно"
     
-    # Проверка базы данных
-    if mysql -h localhost -u root -pHfgFGty217GF -e "USE vitte;" 2>/dev/null; then
-        echo "✓ База данных 'vitte' существует"
-    else
-        echo "Создание базы данных 'vitte'..."
-        mysql -h localhost -u root -pHfgFGty217GF -e "CREATE DATABASE IF NOT EXISTS vitte CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-        echo "✓ База данных создана"
-    fi
-else
-    echo "ВНИМАНИЕ: Не удалось подключиться к MySQL"
-    echo "Убедитесь, что MySQL запущен и пароль правильный: root:HfgFGty217GF"
-    read -p "Продолжить без проверки БД? (y/n): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Завершение работы..."
-        exit 1
-    fi
-fi
+#     # Проверка базы данных
+#     if mysql -h localhost -u root -p HfgFGty217GF -e "USE vitte;" 2>/dev/null; then
+#         echo "✓ База данных 'vitte' существует"
+#     else
+#         echo "Создание базы данных 'vitte'..."
+#         mysql -h localhost -u root -p HfgFGty217GF -e "CREATE DATABASE IF NOT EXISTS vitte CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+#         echo "✓ База данных создана"
+#     fi
+# else
+#     echo "ВНИМАНИЕ: Не удалось подключиться к MySQL"
+#     echo "Убедитесь, что MySQL запущен и пароль правильный: root:HfgFGty217GF"
+#     read -p "Продолжить без проверки БД? (y/n): " -n 1 -r
+#     echo
+#     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+#         echo "Завершение работы..."
+#         exit 1
+#     fi
+# fi
 
 # Запуск наполнения базы данных
 python3 recreate_database.py

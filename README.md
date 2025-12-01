@@ -10,11 +10,11 @@
 
 ## Установка и запуск
 
+Создать из docker образа базу данных MySQL (Doker_create_db_mysql)
+
 ### Быстрый запуск (автоматический)
 
 #### Скачивание bootstrap
-curl -o static/css/bootstrap.min.css https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
-curl -o static/js/bootstrap.bundle.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js
 
 ```bash
 # Сделайте скрипт исполняемым
