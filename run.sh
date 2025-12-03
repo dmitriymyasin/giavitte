@@ -12,6 +12,9 @@ echo "bootstrap css скачен"
 curl -o static/js/bootstrap.bundle.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js
 echo "bootstrap js скачен"
 
+curl -o static/css/fontawesome.min.css https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
+echo "fontawesome скачен"
+
 # Проверка Python
 if ! command -v python3 &> /dev/null; then
     echo "ОШИБКА: Python3 не найден. Установите Python 3.8 или выше."

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Все отзывы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Отзывы о курсах</h1>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label for="course_id" class="form-label">Курс</label>
+                    <select name="course_id" id="course_id" class="form-select">
+                        <option value="">Все курсы</option>
+                        {% for course in courses %}
+                        <option value="{{ course.id }}" {% if course.id == course_id %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="min_rating" class="form-label">Минимальный рейтинг</label>
+                    <select name="min_rating" id="min_rating" class="form-select">
+                        <option value="">Любой</option>
+                        {% for i in range(1, 6) %}
+                        <option value="{{ i }}" {% if min_rating == i %}selected{% endif %}>
+                            {{ i }} звезд и выше
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список отзывов -->
+    <div class="row">
+        {% for review in reviews.items %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                {{ review.user.full_name }}
+                            </h5>
+                            <small class="text-muted">
+                                Курс: {{ review.application.course.name }}
+                            </small>
+                        </div>
+                        <div class="text-warning">
+                            {% for i in range(5) %}
+                            <i class="fas fa-star{% if i < review.rating %} text-warning{% else %} text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <p class="card-text">
+                        {% if review.comment %}
+                            {{ review.comment|truncate(100) }}
+                        {% else %}
+                            <span class="text-muted">Без комментария</span>
+                        {% endif %}
+                    </p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">
+                            {{ review.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </small>
+                        <a href="{{ url_for('view_review', review_id=review.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Пока нет отзывов. Будьте первым!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if reviews.pages > 1 %}
+    <nav aria-label="Навигация по отзывам">
+        <ul class="pagination justify-content-center">
+            {% if reviews.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('all_reviews', page=reviews.prev_num, course_id=course_id, min_rating=min_rating) }}">
+                    Назад
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in reviews.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == reviews.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('all_reviews', page=page_num, course_id=course_id, min_rating=min_rating) }}">
+                    {{ page_num }}
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if reviews.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('all_reviews', page=reviews.next_num, course_id=course_id, min_rating=min_rating) }}">
+                    Вперед
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

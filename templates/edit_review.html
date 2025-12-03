@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование отзыва{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Редактирование отзыва</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Курс: {{ review.application.course.name }}</h5>
+                        <p class="text-muted">Дата создания отзыва: {{ review.created_at.strftime('%d.%m.%Y') }}</p>
+                    </div>
+                    
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.rating.label(class="form-label") }}
+                            <div class="rating-input">
+                                {% for subfield in form.rating %}
+                                <div class="form-check form-check-inline">
+                                    {{ subfield(class="form-check-input") }}
+                                    {{ subfield.label(class="form-check-label") }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.rating.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.rating.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.comment.label(class="form-label") }}
+                            {{ form.comment(class="form-control", rows=5) }}
+                            {% if form.comment.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.comment.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('view_review', review_id=review.id) }}" 
+                               class="btn btn-secondary">Отмена</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

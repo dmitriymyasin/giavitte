@@ -6,6 +6,13 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Добавляем кастомный фильтр nl2br
+@app.template_filter('nl2br')
+def nl2br_filter(s):
+    if s:
+        return s.replace('\n', '<br>\n')
+    return s
+
 # Инициализация расширений
 from models import db
 db.init_app(app)

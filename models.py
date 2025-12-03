@@ -78,3 +78,14 @@ class ApplicationStatusHistory(db.Model):
     new_status = db.Column(db.Enum('new', 'in_progress', 'completed'), nullable=False)
     changed_by = db.Column(db.String(50), default='Admin')
     changed_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+class ReviewStats(db.Model):
+    """Статистика отзывов для курсов"""
+    __tablename__ = 'review_stats'
+    
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), primary_key=True)
+    total_reviews = db.Column(db.Integer, default=0)
+    average_rating = db.Column(db.Float, default=0.0)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    course = db.relationship('Course', backref=db.backref('stats', uselist=False))

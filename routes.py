@@ -245,6 +245,122 @@ def check_login():
     user = User.query.filter_by(login=login).first()
     return jsonify({'available': user is None})
 
+@app.route('/reviews')
+def all_reviews():
+    """Страница со всеми отзывами"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    reviews_query = Review.query.join(User).join(Application).join(Course).order_by(
+        Review.created_at.desc()
+    )
+    
+    # Фильтрация по курсу
+    course_id = request.args.get('course_id', type=int)
+    if course_id:
+        reviews_query = reviews_query.filter(Application.course_id == course_id)
+    
+    # Фильтрация по рейтингу
+    min_rating = request.args.get('min_rating', type=int)
+    if min_rating:
+        reviews_query = reviews_query.filter(Review.rating >= min_rating)
+    
+    reviews = reviews_query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Получаем курсы для фильтра
+    courses = Course.query.all()
+    
+    return render_template('all_reviews.html', 
+                         reviews=reviews, 
+                         courses=courses,
+                         course_id=course_id,
+                         min_rating=min_rating)
+
+@app.route('/review/<int:review_id>')
+def view_review(review_id):
+    """Просмотр конкретного отзыва"""
+    review = Review.query.get_or_404(review_id)
+    return render_template('view_review.html', review=review)
+
+@app.route('/edit_review/<int:review_id>', methods=['GET', 'POST'])
+@login_required
+def edit_review(review_id):
+    """Редактирование отзыва"""
+    review = Review.query.get_or_404(review_id)
+    
+    # Проверяем, что отзыв принадлежит пользователю
+    if review.user_id != current_user.id:
+        flash('Вы можете редактировать только свои отзывы', 'danger')
+        return redirect(url_for('profile'))
+    
+    form = ReviewForm()
+    
+    if form.validate_on_submit():
+        review.rating = form.rating.data
+        review.comment = form.comment.data
+        
+        db.session.commit()
+        flash('Отзыв успешно обновлен!', 'success')
+        return redirect(url_for('profile'))
+    
+    # Заполняем форму текущими данными
+    form.rating.data = review.rating
+    form.comment.data = review.comment
+    
+    return render_template('edit_review.html', form=form, review=review)
+
+@app.route('/delete_review/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    """Удаление отзыва"""
+    review = Review.query.get_or_404(review_id)
+    
+    # Проверяем, что отзыв принадлежит пользователю
+    if review.user_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Вы можете удалять только свои отзывы'}), 403
+    
+    db.session.delete(review)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Отзыв удален'})
+
+@app.route('/api/course/<int:course_id>/reviews/stats')
+def get_course_review_stats(course_id):
+    """Получение статистики отзывов для курса"""
+    course = Course.query.get_or_404(course_id)
+    
+    # Вычисляем статистику
+    reviews = Review.query.join(Application).filter(Application.course_id == course_id).all()
+    
+    total = len(reviews)
+    if total > 0:
+        avg_rating = sum(r.rating for r in reviews) / total
+        rating_distribution = {i: 0 for i in range(1, 6)}
+        for r in reviews:
+            rating_distribution[r.rating] += 1
+    else:
+        avg_rating = 0
+        rating_distribution = {i: 0 for i in range(1, 6)}
+    
+    return jsonify({
+        'success': True,
+        'course_id': course_id,
+        'course_name': course.name,
+        'total_reviews': total,
+        'average_rating': round(avg_rating, 1),
+        'rating_distribution': rating_distribution,
+        'recent_reviews': [
+            {
+                'id': r.id,
+                'rating': r.rating,
+                'comment': r.comment[:100] + '...' if r.comment and len(r.comment) > 100 else r.comment,
+                'user_name': r.user.full_name,
+                'created_at': r.created_at.strftime('%d.%m.%Y')
+            }
+            for r in reviews[:5]
+        ]
+    })
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404

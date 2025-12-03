@@ -58,8 +58,14 @@ class ReviewForm(FlaskForm):
         (2, '2 - Плохо'),
         (1, '1 - Очень плохо')
     ], coerce=int, validators=[DataRequired()])
-    comment = TextAreaField('Комментарий')
+    comment = TextAreaField('Комментарий', validators=[
+        Length(max=1000, message='Комментарий не должен превышать 1000 символов')
+    ])
     submit = SubmitField('Добавить отзыв')
+    
+    def validate_comment(self, field):
+        if field.data and '<script>' in field.data.lower():
+            raise ValidationError('Комментарий содержит недопустимые теги')
 
 class AdminLoginForm(FlaskForm):
     login = StringField('Логин', validators=[DataRequired()])
