@@ -18,8 +18,8 @@ class User(db.Model, UserMixin):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Связи
-    applications = db.relationship('Application', backref='user', lazy=True)
-    reviews = db.relationship('Review', backref='user', lazy=True)
+    applications = db.relationship('Application', backref='user', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -38,7 +38,7 @@ class Course(db.Model):
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    applications = db.relationship('Application', backref='course', lazy=True)
+    applications = db.relationship('Application', backref='course', lazy=True, cascade='all, delete-orphan')
 
 class Application(db.Model):
     __tablename__ = 'applications'
@@ -47,13 +47,18 @@ class Application(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     desired_start_date = db.Column(db.Date, nullable=False)
-    payment_method = db.Column(db.Enum('cash', 'bank_transfer'), nullable=False)
-    status = db.Column(db.Enum('new', 'in_progress', 'completed'), default='new', index=True)
+    payment_method = db.Column(db.String(20), nullable=False)  # Для SQLite используем String вместо Enum
+    status = db.Column(db.String(20), default='new', index=True)  # Для SQLite используем String вместо Enum
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    review = db.relationship('Review', backref='application', uselist=False, lazy=True)
-    status_history = db.relationship('ApplicationStatusHistory', backref='application', lazy=True)
+    review = db.relationship('Review', backref='application', uselist=False, lazy=True, cascade='all, delete-orphan')
+    status_history = db.relationship('ApplicationStatusHistory', backref='application', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = (
+        db.CheckConstraint("payment_method IN ('cash', 'bank_transfer')", name='check_payment_method'),
+        db.CheckConstraint("status IN ('new', 'in_progress', 'completed')", name='check_status'),
+    )
 
 class Review(db.Model):
     __tablename__ = 'reviews'
@@ -74,10 +79,15 @@ class ApplicationStatusHistory(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     application_id = db.Column(db.Integer, db.ForeignKey('applications.id'), nullable=False, index=True)
-    old_status = db.Column(db.Enum('new', 'in_progress', 'completed'))
-    new_status = db.Column(db.Enum('new', 'in_progress', 'completed'), nullable=False)
+    old_status = db.Column(db.String(20))  # Для SQLite используем String вместо Enum
+    new_status = db.Column(db.String(20), nullable=False)  # Для SQLite используем String вместо Enum
     changed_by = db.Column(db.String(50), default='Admin')
     changed_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    __table_args__ = (
+        db.CheckConstraint("old_status IN ('new', 'in_progress', 'completed')", name='check_old_status'),
+        db.CheckConstraint("new_status IN ('new', 'in_progress', 'completed')", name='check_new_status'),
+    )
 
 class ReviewStats(db.Model):
     """Статистика отзывов для курсов"""

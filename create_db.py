@@ -211,3 +211,184 @@ def recreate_database():
             # user5
             (6, 2, '2024-09-05', 'cash', 'completed'),
             (6, 3, '2024-10-10', 'bank_transfer', 'completed')
+        ]
+        
+        application_ids = []
+        for app_data in applications_data:
+            cursor.execute('''
+                INSERT INTO applications (user_id, course_id, desired_start_date, payment_method, status) 
+                VALUES (?, ?, ?, ?, ?)
+            ''', app_data)
+            application_ids.append(cursor.lastrowid)
+        
+        print(f"   ✅ Заявки добавлены (ID: {', '.join(map(str, application_ids))})")
+        
+        # Отзывы
+        print("\n5. Добавление отзывов...")
+        reviews_data = [
+            # user1
+            (2, application_ids[0], 5, 'Отличный курс для начинающих! Преподаватель объясняет сложные темы простым языком. Особенно понравились практические задания. Рекомендую всем, кто хочет начать программировать.', '2024-09-30 14:30:00'),
+            (2, application_ids[1], 4, 'Хороший курс по веб-дизайну. Много полезной информации по современным тенденциям. Не хватило больше практики по адаптивной верстке.', '2024-11-05 10:15:00'),
+            # user2
+            (3, application_ids[3], 5, 'Лучший курс по программированию, который я проходил! Все структурировано, от простого к сложному. Домашние задания помогают закрепить материал. Спасибо преподавателю!', '2024-10-01 16:45:00'),
+            (3, application_ids[4], 4, 'Интересный курс по машинному обучению. Хорошо подобран материал для начинающих. Хотелось бы больше реальных проектов и работы с большими данными.', '2024-11-25 09:20:00'),
+            # user3
+            (4, application_ids[6], 3, 'Курс неплохой, но есть недочеты. Некоторые темы рассмотрены поверхностно. Хорошая теоретическая база, но практики маловато.', '2024-09-10 11:30:00'),
+            (4, application_ids[7], 5, 'Отличный курс по базам данных! Все очень подробно: от теории до сложных запросов. Научился проектировать нормализованные базы и оптимизировать запросы. Рекомендую!', '2024-10-25 15:10:00'),
+            # user4
+            (5, application_ids[9], 5, 'Супер курс! Прошел его с нуля, теперь пишу программы на Python. Преподаватель всегда на связи, помогает с вопросами. Материал актуальный и полезный.', '2024-08-30 13:45:00'),
+            (5, application_ids[10], 4, 'Понравился курс по машинному обучению. Много практических примеров. Из минусов - некоторые библиотеки устарели, нужно обновлять материалы.', '2024-09-15 17:20:00'),
+            # user5
+            (6, application_ids[11], 5, 'Прекрасный курс по веб-дизайну! Научилась создавать современные интерфейсы, работать с Figma. Теперь могу работать веб-дизайнером. Спасибо!', '2024-10-05 14:00:00'),
+            (6, application_ids[12], 4, 'Хороший курс по базам данных. Получил много полезных знаний по SQL и проектированию. Есть небольшие замечания по организации материала, но в целом рекомендую.', '2024-11-15 10:30:00')
+        ]
+        
+        cursor.executemany('''
+            INSERT INTO reviews (user_id, application_id, rating, comment, created_at) 
+            VALUES (?, ?, ?, ?, ?)
+        ''', reviews_data)
+        print("   ✅ Отзывы добавлены")
+        
+        # История статусов
+        print("\n6. Добавление истории статусов...")
+        status_history_data = []
+        
+        # Для завершенных заявок
+        completed_app_ids = [application_ids[0], application_ids[1], application_ids[3], application_ids[4],
+                           application_ids[6], application_ids[7], application_ids[9], application_ids[10],
+                           application_ids[11], application_ids[12]]
+        
+        for app_id in completed_app_ids:
+            status_history_data.append((app_id, 'new', 'in_progress', 'Admin'))
+            status_history_data.append((app_id, 'in_progress', 'completed', 'Admin'))
+        
+        # Для заявок в процессе
+        in_progress_app_ids = [application_ids[2], application_ids[8]]
+        for app_id in in_progress_app_ids:
+            status_history_data.append((app_id, 'new', 'in_progress', 'Admin'))
+        
+        if status_history_data:
+            cursor.executemany('''
+                INSERT INTO application_status_history (application_id, old_status, new_status, changed_by) 
+                VALUES (?, ?, ?, ?)
+            ''', status_history_data)
+        
+        print("   ✅ История статусов добавлена")
+        
+        # Вычисляем статистику отзывов
+        print("\n7. Расчет статистики отзывов...")
+        
+        cursor.execute('''
+            SELECT 
+                c.id as course_id,
+                COUNT(r.id) as total_reviews,
+                AVG(r.rating) as average_rating
+            FROM courses c
+            LEFT JOIN applications a ON c.id = a.course_id
+            LEFT JOIN reviews r ON a.id = r.application_id
+            GROUP BY c.id
+        ''')
+        
+        stats = cursor.fetchall()
+        for stat in stats:
+            if stat['total_reviews']:
+                cursor.execute('''
+                    INSERT INTO review_stats (course_id, total_reviews, average_rating)
+                    VALUES (?, ?, ?)
+                ''', (stat['course_id'], stat['total_reviews'], float(stat['average_rating'])))
+            else:
+                cursor.execute('''
+                    INSERT INTO review_stats (course_id, total_reviews, average_rating)
+                    VALUES (?, 0, 0.0)
+                ''', (stat['course_id'],))
+        
+        print("   ✅ Статистика отзывов рассчитана")
+        
+        connection.commit()
+        
+        # Выводим итоговую статистику
+        print("\n" + "=" * 60)
+        print("📊 ИТОГОВАЯ СТАТИСТИКА БАЗЫ ДАННЫХ:")
+        print("=" * 60)
+        
+        cursor.execute("SELECT COUNT(*) as count FROM users")
+        users_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) as count FROM courses")
+        courses_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) as count FROM applications")
+        apps_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) as count FROM reviews")
+        reviews_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) as count FROM application_status_history")
+        history_count = cursor.fetchone()[0]
+        
+        print(f"   👥 Пользователей: {users_count}")
+        print(f"   📚 Курсов: {courses_count}")
+        print(f"   📝 Заявок: {apps_count}")
+        print(f"   ⭐ Отзывов: {reviews_count}")
+        print(f"   📋 Записей истории: {history_count}")
+        
+        # Статистика по курсам
+        cursor.execute('''
+            SELECT 
+                c.name,
+                COALESCE(rs.total_reviews, 0) as total_reviews,
+                ROUND(COALESCE(rs.average_rating, 0), 1) as avg_rating
+            FROM courses c
+            LEFT JOIN review_stats rs ON c.id = rs.course_id
+            ORDER BY rs.average_rating DESC, c.name ASC
+        ''')
+        
+        course_stats = cursor.fetchall()
+        
+        print("\n   📈 РЕЙТИНГ КУРСОВ:")
+        for stat in course_stats:
+            avg_rating = stat['avg_rating'] if stat['avg_rating'] else 0
+            stars = "★" * int(round(avg_rating))
+            empty_stars = "☆" * (5 - int(round(avg_rating))) if avg_rating > 0 else "☆☆☆☆☆"
+            reviews_text = f"({stat['total_reviews']} отзывов)" if stat['total_reviews'] > 0 else "(нет отзывов)"
+            print(f"      📖 {stat['name']}")
+            print(f"          {avg_rating}/5 {stars}{empty_stars} {reviews_text}")
+        
+        print("\n" + "=" * 60)
+        print("✅ БАЗА ДАННЫХ SQLite УСПЕШНО СОЗДАНА!")
+        print("=" * 60)
+        
+        print("\n🔑 ТЕСТОВЫЕ УЧЕТНЫЕ ЗАПИСИ:")
+        print("   👑 Администратор: Логин: Admin | Пароль: KorokNET")
+        print("\n   👤 Обычные пользователи:")
+        print("      1. Логин: user1 | Пароль: password123")
+        print("      2. Логин: user2 | Пароль: password456")
+        print("      3. Логин: user3 | Пароль: password789")
+        print("      4. Логин: user4 | Пароль: password012")
+        print("      5. Логин: user5 | Пароль: password345")
+        
+        print("\n🚀 ДЛЯ ЗАПУСКА ПРИЛОЖЕНИЯ:")
+        print("   1. Запустите скрипт: ./run.sh")
+        print("   2. Или выполните: python3 app.py")
+        
+        print("\n🌐 СЕРВЕР БУДЕТ ДОСТУПЕН ПО АДРЕСУ:")
+        print("   http://localhost:5000")
+        
+        print("\n" + "=" * 60)
+        
+    except sqlite3.Error as e:
+        print(f"\n❌ Ошибка SQLite: {e}")
+        return False
+    except Exception as e:
+        print(f"\n❌ Ошибка: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    finally:
+        if 'connection' in locals():
+            connection.close()
+    
+    return True
+
+if __name__ == '__main__':
+    recreate_database()
