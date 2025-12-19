@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_login import LoginManager
 import os
 from config import Config
@@ -16,6 +16,10 @@ def nl2br_filter(s):
 # Инициализация расширений
 from models import db
 db.init_app(app)
+
+# Создаем таблицы при запуске приложения
+with app.app_context():
+    db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -35,6 +39,15 @@ def inject_config():
 
 # Импорт маршрутов
 from routes import *
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
