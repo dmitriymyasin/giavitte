@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">📝 Регистрация нового пользователя</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}" id="registrationForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.login.label(class="form-label") }}
+                            <div class="input-group">
+                                {{ form.login(class="form-control" + (" is-invalid" if form.login.errors else ""), 
+                                    id="loginField") }}
+                                <button type="button" class="btn btn-outline-secondary" onclick="checkLogin()">
+                                    Проверить
+                                </button>
+                            </div>
+                            <div id="loginCheckResult" class="form-text"></div>
+                            {% if form.login.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.login.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Логин должен содержать только кириллицу и цифры, минимум 6 символов
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.full_name.label(class="form-label") }}
+                            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                            {% if form.full_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.full_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Например: Иванов Иван Иванович</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Минимум 6 символов</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                            {% if form.confirm_password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.confirm_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), 
+                                placeholder="+7(XXX)-XXX-XX-XX") }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.phone.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Формат: +7(XXX)-XXX-XX-XX</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Например: example@email.com</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войдите в систему</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkLogin() {
+    const login = document.getElementById('loginField').value;
+    const resultDiv = document.getElementById('loginCheckResult');
+    
+    if (login.length < 6) {
+        resultDiv.innerHTML = '<span class="text-warning">Логин должен быть не менее 6 символов</span>';
+        return;
+    }
+    
+    if (!/^[а-яА-ЯёЁ0-9]+$/.test(login)) {
+        resultDiv.innerHTML = '<span class="text-warning">Логин должен содержать только кириллицу и цифры</span>';
+        return;
+    }
+    
+    fetch(`/check_login?login=${encodeURIComponent(login)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                resultDiv.innerHTML = '<span class="text-success">✓ Этот логин доступен</span>';
+            } else {
+                resultDiv.innerHTML = '<span class="text-danger">✗ Этот логин уже занят</span>';
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<span class="text-danger">Ошибка проверки</span>';
+        });
+}
+</script>
+{% endblock %}
