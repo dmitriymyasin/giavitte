@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Панель администратора - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>👑 Панель администратора</h1>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Выйти</a>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Вы вошли как администратор</strong> - у вас есть доступ к модерации всех карточек пользователей.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">⏳ Карточки на модерации</h3>
+            </div>
+            <div class="card-body">
+                {% if pending_cards %}
+                    <div class="list-group">
+                        {% for card in pending_cards %}
+                        <a href="{{ url_for('admin_card_detail', card_id=card.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ card.title }}</h5>
+                                <small class="text-muted">{{ card.created_at.strftime('%d.%m.%Y') }}</small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Автор:</strong> {{ card.author }}<br>
+                                <strong>Пользователь:</strong> {{ card.user.full_name }} ({{ card.user.login }})<br>
+                                <strong>Тип:</strong> 
+                                {% if card.card_type == 'share' %}
+                                    <span class="badge bg-success">Готов поделиться</span>
+                                {% else %}
+                                    <span class="badge bg-info">Хочу в библиотеку</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Нажмите для просмотра и модерации</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <strong>Отлично!</strong> Нет карточек, ожидающих модерации.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title mb-0">📊 Статистика</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Всего карточек
+                        <span class="badge bg-primary rounded-pill">{{ pending_cards|length + approved_cards|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        На модерации
+                        <span class="badge bg-warning rounded-pill">{{ pending_cards|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Опубликовано
+                        <span class="badge bg-success rounded-pill">{{ approved_cards|length }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">✅ Недавно одобренные</h5>
+            </div>
+            <div class="card-body">
+                {% if approved_cards %}
+                    {% for card in approved_cards[:5] %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">{{ card.title|truncate(30) }}</h6>
+                            <p class="card-text mb-1">
+                                <small>{{ card.author|truncate(25) }}</small><br>
+                                <small class="text-muted">{{ card.user.full_name }}</small>
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Нет одобренных карточек</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
