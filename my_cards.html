@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Мои карточки - Буквоежка{% endblock %}
+
+{% block content %}
+<h1>📋 Мои карточки</h1>
+
+<div class="mb-4">
+    <a href="{{ url_for('create_card') }}" class="btn btn-primary">➕ Создать новую карточку</a>
+</div>
+
+<h3>Активные карточки</h3>
+{% if active_cards %}
+    <div class="row">
+        {% for card in active_cards %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ card.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ card.author }}</h6>
+                    <p class="card-text">
+                        <strong>Тип:</strong> 
+                        {% if card.card_type == 'share' %}Готов поделиться{% else %}Хочу в библиотеку{% endif %}
+                        <br>
+                        <strong>Статус:</strong> 
+                        <span class="status-{{ card.status }}">
+                            {% if card.status == 'pending' %}На модерации
+                            {% elif card.status == 'approved' %}Одобрено
+                            {% elif card.status == 'rejected' %}Отклонено
+                            {% else %}В архиве{% endif %}
+                        </span>
+                    </p>
+                    {% if card.publisher %}<p><strong>Издательство:</strong> {{ card.publisher }}</p>{% endif %}
+                    {% if card.year %}<p><strong>Год издания:</strong> {{ card.year }}</p>{% endif %}
+                    <button class="btn btn-sm btn-outline-danger delete-card" data-card-id="{{ card.id }}">
+                        Удалить
+                    </button>
+                </div>
+                <div class="card-footer text-muted">
+                    Создано: {{ card.created_at.strftime('%d.%m.%Y %H:%M') }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">У вас пока нет активных карточек</div>
+{% endif %}
+
+<h3 class="mt-4">Архивные карточки</h3>
+{% if archived_cards %}
+    <div class="row">
+        {% for card in archived_cards %}
+        <div class="col-md-6">
+            <div class="card border-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">{{ card.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ card.author }}</h6>
+                    <p class="card-text">
+                        <strong>Статус:</strong> 
+                        <span class="status-{{ card.status }}">
+                            {% if card.status == 'rejected' %}Отклонено администратором
+                            {% else %}В архиве{% endif %}
+                        </span>
+                        {% if card.rejection_reason %}
+                            <br><strong>Причина:</strong> {{ card.rejection_reason }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-footer text-muted">
+                    Обновлено: {{ card.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">Архив пуст</div>
+{% endif %}
+
+<script>
+document.querySelectorAll('.delete-card').forEach(button => {
+    button.addEventListener('click', function() {
+        const cardId = this.dataset.cardId;
+        if (confirm('Вы уверены, что хотите удалить эту карточку?')) {
+            fetch(`/delete_card/${cardId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Ошибка при удалении');
+                }
+            })
+            .catch(error => {
+                alert('Ошибка сети');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
