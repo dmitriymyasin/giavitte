@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">📚 Портал "Буквоежка"</h1>
+        <p class="lead mb-5">Обменяйтесь книгами с другими читателями. Находите новые книги для своей библиотеки и делитесь теми, что уже прочитали.</p>
+        
+        {% if not current_user.is_authenticated %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Начните обмен книгами!</h3>
+                    <p class="card-text mb-4">Зарегистрируйтесь, чтобы создать свою первую карточку с книгой.</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">Зарегистрироваться</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Войти</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Добро пожаловать, {{ current_user.full_name }}!</h3>
+                    <p class="card-text mb-4">Вы можете создавать карточки книг, просматривать свои карточки или работать с архивом.</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="{{ url_for('create_card') }}" class="btn btn-primary btn-lg px-4 gap-3">➕ Создать карточку</a>
+                        <a href="{{ url_for('my_cards') }}" class="btn btn-outline-primary btn-lg px-4">📋 Мои карточки</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="mt-5">
+            <h3>Как это работает?</h3>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">1. Регистрация</h4>
+                            <p class="card-text">Создайте аккаунт с уникальным логином и заполните свой профиль</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">2. Создание карточки</h4>
+                            <p class="card-text">Укажите книгу, которой хотите поделиться, или которую ищете</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">3. Модерация</h4>
+                            <p class="card-text">Администратор проверяет карточку и публикует её для других пользователей</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <h4>О портале</h4>
+            <p class="text-muted">"Буквоежка" - это платформа для обмена книгами между читателями. Мы помогаем найти новую книгу для чтения и дать вторую жизнь уже прочитанным книгам.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
