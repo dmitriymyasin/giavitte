@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Вход администратора - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning">
+                <h3 class="card-title mb-0 text-dark">🔐 Вход для администратора</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong>Внимание!</strong> Эта страница предназначена только для администраторов портала.
+                </div>
+                
+                <form method="POST" action="{{ url_for('admin_login') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.login.label(class="form-label") }}
+                        {{ form.login(class="form-control" + (" is-invalid" if form.login.errors else "")) }}
+                        {% if form.login.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.login.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-warning btn-lg") }}
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p><a href="{{ url_for('login') }}">Вход для обычных пользователей</a></p>
+                    <p><a href="{{ url_for('index') }}">Вернуться на главную</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
