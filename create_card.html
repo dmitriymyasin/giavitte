@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Создание карточки - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">📖 Создание новой карточки книги</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_card') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <h5 class="mb-3">Основная информация</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.author.label(class="form-label") }}
+                        {{ form.author(class="form-control" + (" is-invalid" if form.author.errors else ""), 
+                            placeholder="Например: Лев Толстой") }}
+                        {% if form.author.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.author.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Укажите автора книги</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), 
+                            placeholder="Например: Война и мир") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Укажите полное название книги</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Тип карточки</label>
+                        <div class="border rounded p-3">
+                            <div class="form-check mb-2">
+                                {{ form.card_type(value="share", class="form-check-input") }}
+                                <label class="form-check-label">
+                                    <strong>Готов поделиться</strong> - у меня есть эта книга, и я готов её отдать/обменять
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.card_type(value="want", class="form-check-input") }}
+                                <label class="form-check-label">
+                                    <strong>Хочу в свою библиотеку</strong> - я ищу эту книгу для своей коллекции
+                                </label>
+                            </div>
+                        </div>
+                        {% if form.card_type.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.card_type.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="mb-3 mt-4">Дополнительная информация (необязательно)</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.publisher.label(class="form-label") }}
+                            {{ form.publisher(class="form-control", placeholder="Например: Эксмо") }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.year.label(class="form-label") }}
+                            {{ form.year(class="form-control", placeholder="Например: 2020") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.binding.label(class="form-label") }}
+                            {{ form.binding(class="form-control", placeholder="Например: Твердый переплет") }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.condition.label(class="form-label") }}
+                            {{ form.condition(class="form-control", placeholder="Например: Отличное состояние") }}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Важно!</strong> После создания карточка будет отправлена на модерацию администратору. 
+                        Только после одобрения карточка станет доступна другим пользователям.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <a href="{{ url_for('my_cards') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
