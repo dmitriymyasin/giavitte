@@ -1,0 +1,23 @@
+bookexchange/
+├── app.py                    # Основное Flask приложение
+├── models.py                 # Модели базы данных SQLite
+├── routes.py                 # Маршруты приложения
+├── forms.py                  # Формы для регистрации, карточек
+├── config.py                 # Конфигурация приложения
+├── init_db.py                # Инициализация базы данных
+├── requirements.txt          # Зависимости Python
+├── .env                      # Переменные окружения
+├── run.sh                    # Скрипт запуска
+│
+├── templates/                # HTML шаблоны
+│   ├── base.html             # Базовый шаблон
+│   ├── index.html            # Главная страница
+│   ├── login.html            # Вход
+│   ├── register.html         # Регистрация
+│   ├── my_cards.html         # Мои карточки
+│   ├── create_card.html      # Создание карточки
+│   ├── admin.html            # Панель администратора
+│   ├── admin_card_detail.html # Детали карточки для админа
+│   └── admin_login.html      # Вход для администратора
+│
+└── bookexchange.db           # Файл базы данных SQLite
