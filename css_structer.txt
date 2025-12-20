@@ -1,0 +1,8 @@
+bookexchange/
+├── static/
+│   ├── css/
+│   │   ├── bootstrap.min.css      # Bootstrap CSS
+│   │   └── style.css             # Кастомные стили
+│   └── js/
+│       ├── bootstrap.bundle.min.js # Bootstrap JS
+│       └── script.js              # Кастомные скрипты
