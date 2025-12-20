@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Модерация карточки - Буквоежка{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">🔍 Просмотр карточки #{{ card.id }}</h3>
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-sm btn-outline-secondary">← Назад</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h4>Информация о карточке</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width: 30%">Название книги:</th>
+                                <td><strong>{{ card.title }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Автор:</th>
+                                <td>{{ card.author }}</td>
+                            </tr>
+                            <tr>
+                                <th>Тип карточки:</th>
+                                <td>
+                                    {% if card.card_type == 'share' %}
+                                        <span class="badge bg-success">Готов поделиться</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Хочу в библиотеку</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Пользователь:</th>
+                                <td>
+                                    {{ card.user.full_name }}<br>
+                                    <small class="text-muted">Логин: {{ card.user.login }}</small><br>
+                                    <small class="text-muted">Email: {{ card.user.email }}</small><br>
+                                    <small class="text-muted">Телефон: {{ card.user.phone }}</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Дата создания:</th>
+                                <td>{{ card.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            </tr>
+                            {% if card.publisher %}
+                            <tr>
+                                <th>Издательство:</th>
+                                <td>{{ card.publisher }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if card.year %}
+                            <tr>
+                                <th>Год издания:</th>
+                                <td>{{ card.year }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if card.binding %}
+                            <tr>
+                                <th>Переплет:</th>
+                                <td>{{ card.binding }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if card.condition %}
+                            <tr>
+                                <th>Состояние книги:</th>
+                                <td>{{ card.condition }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Текущий статус:</th>
+                                <td>
+                                    {% if card.status == 'pending' %}
+                                        <span class="badge bg-warning">На модерации</span>
+                                    {% elif card.status == 'approved' %}
+                                        <span class="badge bg-success">Одобрено</span>
+                                    {% elif card.status == 'rejected' %}
+                                        <span class="badge bg-danger">Отклонено</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">В архиве</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                {% if card.status == 'pending' %}
+                <div class="mb-4">
+                    <h4>Действие модератора</h4>
+                    <form method="POST" action="{{ url_for('admin_card_detail', card_id=card.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Выберите действие:</label>
+                            <div class="border rounded p-3">
+                                <div class="form-check mb-2">
+                                    {{ form.action(value="approve", class="form-check-input") }}
+                                    <label class="form-check-label">
+                                        <strong>Опубликовать карточку</strong> - карточка станет доступна в системе
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.action(value="reject", class="form-check-input", id="rejectRadio") }}
+                                    <label class="form-check-label">
+                                        <strong>Отклонить публикацию</strong> - карточка будет отклонена с указанием причины
+                                    </label>
+                                </div>
+                            </div>
+                            {% if form.action.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.action.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="reasonField" style="display: none;">
+                            {{ form.reason.label(class="form-label") }}
+                            {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), 
+                                rows="3", placeholder="Укажите причину отклонения карточки...") }}
+                            {% if form.reason.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.reason.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Причина будет показана пользователю</div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Внимание!</strong> После выполнения действия статус карточки изменится, 
+                            и пользователь получит уведомление.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+                {% elif card.status == 'approved' %}
+                <div class="alert alert-success">
+                    <strong>Эта карточка уже одобрена</strong> и опубликована в системе.
+                </div>
+                {% elif card.status == 'rejected' and card.rejection_reason %}
+                <div class="alert alert-danger">
+                    <strong>Карточка отклонена</strong><br>
+                    <strong>Причина:</strong> {{ card.rejection_reason }}
+                </div>
+                {% endif %}
+                
+                {% if card.actions %}
+                <div class="mt-4">
+                    <h5>История действий</h5>
+                    <div class="list-group">
+                        {% for action in card.actions|sort(attribute='created_at', reverse=true) %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {% if action.action == 'approve' %}
+                                        <span class="badge bg-success">Одобрено</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Отклонено</span>
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">{{ action.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">Администратор: {{ action.admin_login }}</p>
+                            {% if action.reason %}
+                            <p class="mb-1"><strong>Причина:</strong> {{ action.reason }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rejectRadio = document.getElementById('rejectRadio');
+    const reasonField = document.getElementById('reasonField');
+    const reasonInput = document.querySelector('textarea[name="reason"]');
+    
+    // Показать/скрыть поле причины при выборе отклонения
+    document.querySelectorAll('input[name="action"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'reject') {
+                reasonField.style.display = 'block';
+                reasonInput.required = true;
+            } else {
+                reasonField.style.display = 'none';
+                reasonInput.required = false;
+            }
+        });
+    });
+    
+    // Проверить начальное состояние
+    if (rejectRadio && rejectRadio.checked) {
+        reasonField.style.display = 'block';
+        reasonInput.required = true;
+    }
+});
+</script>
+{% endblock %}
